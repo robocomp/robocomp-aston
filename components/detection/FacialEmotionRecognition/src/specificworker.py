@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2020 by YOUR NAME HERE
+#    Copyright (C) 2020 by YOUR NAME HERE
 #
 #    This file is part of RoboComp
 #
@@ -19,55 +19,56 @@
 #    along with RoboComp.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from genericworker import *
+from PySide2.QtCore import QTimer
+from PySide2.QtWidgets import QApplication
+
+
 import sys, os, traceback, time
 import numpy as np
 import cv2
 import face_recognition
 
-# If RoboComp was compiled with Python bindings you can use InnerModel in Python
-# sys.path.append('/opt/robocomp/lib')
-# import librobocomp_qmat
-# import librobocomp_osgviewer
-# import librobocomp_innermodel
+from genericworker import *
 
 class SpecificWorker(GenericWorker):
-	def __init__(self, proxy_map):
-		super(SpecificWorker, self).__init__(proxy_map)
-		self.timer.timeout.connect(self.compute)
-		self.Period = 50
-		self.timer.start(self.Period)
+    def __init__(self, proxy_map, startup_check=False):
+        super(SpecificWorker, self).__init__(proxy_map)
+        self.Period = 50
+        if startup_check:
+            self.startup_check()
+        else:
+            self.timer.timeout.connect(self.compute)
+            self.timer.start(self.Period)
 
 
-	def __del__(self):
-		print('SpecificWorker destructor')
+    def __del__(self):
+        print('SpecificWorker destructor')
 
-	def setParams(self, params):
-		#try:
-		#	self.innermodel = InnerModel(params["InnerModelPath"])
-		#except:
-		#	traceback.print_exc()
-		#	print("Error reading config params")
-		return True
+    def setParams(self, params):
+        return True
 
-	@QtCore.Slot()
-	def compute(self):
-		print('SpecificWorker.compute...')
-		try:
-			data = self.camerasimple_proxy.getImage()
-			arr = np.fromstring(data.image, np.uint8)
-			frame = np.reshape(arr, (data.height, data.width, data.depth))
-			locations = face_recognition.face_locations(frame, model='cnn')
-			for i in range(len(locations)):
-				face_location = locations[i]
-				cv2.rectangle(frame, (face_location[3], face_location[0]), (face_location[1], face_location[2]), [0,0,255], 3)
-				faceImg = frame[face_location[0]:face_location[2],face_location[3]:face_location[1],:]
-				# Run inference of the face image and get the label
-				emotionlabel = "UNKNOWN"
-				cv2.putText(frame, emotionlabel, (face_location[3], face_location[0]-2), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 , cv2.LINE_AA)
-			cv2.imshow('Output', frame)
-		except:
-			pass
-		cv2.waitKey(1)
-		return True
+
+    @QtCore.Slot()
+    def compute(self):
+        print('SpecificWorker.compute...')
+        try:
+            data = self.camerasimple_proxy.getImage()
+            arr = np.fromstring(data.image, np.uint8)
+            frame = np.reshape(arr, (data.height, data.width, data.depth))
+            locations = face_recognition.face_locations(frame, model='cnn')
+            for i in range(len(locations)):
+                face_location = locations[i]
+                cv2.rectangle(frame, (face_location[3], face_location[0]), (face_location[1], face_location[2]), [0,0,255], 3)
+                faceImg = frame[face_location[0]:face_location[2],face_location[3]:face_location[1],:]
+                # Run inference of the face image and get the label
+                emotionlabel = "UNKNOWN"
+                cv2.putText(frame, emotionlabel, (face_location[3], face_location[0]-2), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 1 , cv2.LINE_AA)
+            cv2.imshow('Output', frame)
+        except:
+            pass
+        cv2.waitKey(1)
+        return True
+
+    def startup_check(self):
+        QTimer.singleShot(200, QApplication.instance().quit)
 
