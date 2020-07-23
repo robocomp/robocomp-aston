@@ -1,6 +1,6 @@
 # FacialEmotionRecognition
 
-Note: This component is under development. Currently it can generate a bounding box across the facial images and display emotion as "UNKNOWN". Once the model is completed, it will display the facial emotion.
+Note: This component is under development. Currently it can generate a bounding box across the facial images and display the facial emotion.
 
 ## Resolving dependencies
 
@@ -25,9 +25,9 @@ Ice.Trace.Protocol=0
 You must ensure the proxies, hostname and port number of `CameraSimpleProxy` match the endpoints in the config files of the corresponding interfaces.
     
 ## Starting the component
-To avoid changing the *config* file in the repository, we can copy it to the component's home directory, so changes will remain untouched by future git pulls:
+To avoid changing the *config* file in the repository, we can copy it to the component's home directory, so changes will remain untouched by future git pulls.
 
-Open one more terminal.
+Download the trained model from this [link](https://drive.google.com/file/d/1aygo0currK-E12DFzlOZ3iSXxq0YUUMJ/view?usp=sharing), move it in the `FacialEmotionRecognition/model` directory and unzip it. Once the model is in the correct directory open one more terminal and follow these instructions.
 
 Terminal 1:
 ```

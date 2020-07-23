@@ -32,6 +32,8 @@ import time
 from genericworker import *
 sys.path.append(os.path.join(os.getcwd(),"assets"))
 import face_detection
+sys.path.append(os.path.join(os.getcwd(),"model"))
+import visualize
 
 class SpecificWorker(GenericWorker):
     def __init__(self, proxy_map, startup_check=False):
@@ -88,7 +90,10 @@ class SpecificWorker(GenericWorker):
                     x0, y0, x1, y1 = [int(_) for _ in bbox]
                     cv2.rectangle(frame, (x0, y0), (x1, y1), self.bb_color, self.bb_thickness)
                     faceImg = frame[y0:y1,x0:x1,:]
-                    emotionlabel = "UNKNOWN"
+                    faceImgGray = cv2.cvtColor(faceImg, cv2.COLOR_BGR2GRAY)
+                    faceImgGray = cv2.resize(faceImgGray, (48, 48))
+                    emotionlabel = visualize.predict_emotion(faceImgGray)
+                    # emotionlabel = "UNKNOWN"
                     cv2.putText(frame, emotionlabel, (x0, y0-2), cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.text_color, 1 , cv2.LINE_AA)
 
             # Calculating and showing FPS
