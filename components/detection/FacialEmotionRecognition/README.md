@@ -10,11 +10,11 @@ face_recognition
 As an example, `FacialEmotionRecognition` component parameters are characterized in config file described below:
 
 ```
+# Endpoints for implements interfaces
+FacialEmotionRecognition.Endpoints=tcp -p 10015
+
 # Proxies for required interfaces
 CameraSimpleProxy = camerasimple:tcp -h localhost -p 10005
-
-# This property is used by the clients to connect to IceStorm.
-TopicManager.Proxy=IceStorm/TopicManager:default -p 9999
 
 Ice.Warn.Connections=0
 Ice.Trace.Network=0
@@ -22,7 +22,7 @@ Ice.Trace.Protocol=0
 
 ```
 
-You must ensure the proxies, hostname and port number of `CameraSimpleProxy` match the endpoints in the config files of the corresponding interfaces.
+You must ensure the proxies, hostname and port number of `CameraSimpleProxy` and `FacialEmotionRecognition` match the endpoints in the config files of the corresponding interfaces.
     
 ## Starting the component
 To avoid changing the *config* file in the repository, we can copy it to the component's home directory, so changes will remain untouched by future git pulls.
@@ -41,4 +41,4 @@ cd detection/FacialEmotionRecognition
 python src/FacialEmotionRecognition.py etc/config-run
 ```
 
-Once the component is running, user can see the camera feed with bounding box across the faces in a pop-up window.
+Once the component is running, user can see the camera feed with bounding box across the faces in a pop-up window. The Facial Images, output of the softmax layer of the model and the bounding box coordinates of the faces are also returned by the function `getEmotionList()` implemented in the component.

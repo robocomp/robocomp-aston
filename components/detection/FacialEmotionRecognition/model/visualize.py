@@ -40,6 +40,6 @@ def predict_emotion(img):
 	outputs = net(inputs)
 	outputs_avg = outputs.view(ncrops, -1).mean(0)  # avg over crops
 	score = F.softmax(outputs_avg)
-	_, predicted = torch.max(outputs_avg.data, 0)
-	emotion_label = class_names[int(predicted.cpu().numpy())]
-	return emotion_label
+	
+	prob_vector = score.data.cpu().numpy()[0:6]
+	return prob_vector

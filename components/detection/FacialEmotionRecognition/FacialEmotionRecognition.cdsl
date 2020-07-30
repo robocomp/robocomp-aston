@@ -1,10 +1,12 @@
 import "CameraSimple.idsl";
+import "FacialEmotionRecognition.idsl";
 
 Component FacialEmotionRecognition
 {
 	Communications
 	{
 		requires CameraSimple;
+		implements FacialEmotionRecognition;
 	};
 	language Python;
 };
