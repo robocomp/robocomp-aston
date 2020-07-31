@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 PROJECT(  FacialEmotionRecognition )
 
-INCLUDE( /opt/robocomp/cmake/robocomp.cmake )
+INCLUDE( $ENV{ROBOCOMP}/cmake/robocomp.cmake )
 
-ROBOCOMP_IDSL_TO_ICE( CommonBehavior CameraSimple )
+ROBOCOMP_IDSL_TO_ICE( CommonBehavior CameraSimple FacialEmotionRecognition )

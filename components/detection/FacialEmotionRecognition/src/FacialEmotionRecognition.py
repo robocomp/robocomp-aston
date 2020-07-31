@@ -55,14 +55,9 @@
 #
 #
 
-import sys
-import traceback
-import IceStorm
-import time
-import os
-import copy
-import argparse
+import sys, traceback, IceStorm, time, os, copy
 from termcolor import colored
+
 # Ctrl+c handling
 import signal
 
@@ -100,13 +95,13 @@ def sigint_handler(*args):
     
 if __name__ == '__main__':
     app = QtCore.QCoreApplication(sys.argv)
-    parser = argparse.ArgumentParser()
-    parser.add_argument('iceconfigfile', nargs='?', type=str, default='etc/config')
-    parser.add_argument('--startup-check', action='store_true')
-
-    args = parser.parse_args()
-
-    ic = Ice.initialize(args.iceconfigfile)
+    params = copy.deepcopy(sys.argv)
+    if len(params) > 1:
+        if not params[1].startswith('--Ice.Config='):
+            params[1] = '--Ice.Config=' + params[1]
+    elif len(params) == 1:
+        params.append('--Ice.Config=etc/config')
+    ic = Ice.initialize(params)
     status = 0
     mprx = {}
     parameters = {}
@@ -119,7 +114,7 @@ if __name__ == '__main__':
         proxyString = ic.getProperties().getProperty('CameraSimpleProxy')
         try:
             basePrx = ic.stringToProxy(proxyString)
-            camerasimple_proxy = RoboCompCameraSimple.CameraSimplePrx.uncheckedCast(basePrx)
+            camerasimple_proxy = CameraSimplePrx.uncheckedCast(basePrx)
             mprx["CameraSimpleProxy"] = camerasimple_proxy
         except Ice.Exception:
             print('Cannot connect to the remote object (CameraSimple)', proxyString)
@@ -131,18 +126,22 @@ if __name__ == '__main__':
         status = 1
 
     if status == 0:
-        worker = SpecificWorker(mprx, args.startup_check)
+        worker = SpecificWorker(mprx)
         worker.setParams(parameters)
     else:
         print("Error getting required connections, check config file")
         sys.exit(-1)
 
+    adapter = ic.createObjectAdapter('FacialEmotionRecognition')
+    adapter.add(FacialEmotionRecognitionI(worker), ic.stringToIdentity('facialemotionrecognition'))
+    adapter.activate()
+
     signal.signal(signal.SIGINT, sigint_handler)
     app.exec_()
 
     if ic:
-        # try:
-        ic.destroy()
-        # except:
-        #     traceback.print_exc()
-        #     status = 1
+        try:
+            ic.destroy()
+        except:
+            traceback.print_exc()
+            status = 1
