@@ -1,0 +1,12 @@
+import "CameraSimple.idsl";
+import "MultiModalHumanIdentification.idsl";
+
+Component humanIdentificationClient
+{
+    Communications
+    {
+        requires CameraSimple, MultiModalHumanIdentification;
+    };
+    language python;
+};
+
