@@ -1,0 +1,10 @@
+import "MPTFeatures.idsl";
+
+Component MPTFeatures
+{
+    Communications
+    {
+        implements MPTFeatures;
+    };
+    language Python;
+};

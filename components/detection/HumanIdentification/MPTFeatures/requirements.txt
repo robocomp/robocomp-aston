@@ -1,0 +1,12 @@
+progress
+numba
+torch
+pycocotools
+matplotlib
+Cython
+torchvision
+numpy
+pyquaternion
+PySide2
+scikit_learn
+tensorboardX
