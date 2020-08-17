@@ -1,0 +1,10 @@
+import "GaitFeatures.idsl";
+
+Component gaitFeatures
+{
+    Communications
+    {
+        implements GaitFeatures;
+    };
+    language Python;
+};
