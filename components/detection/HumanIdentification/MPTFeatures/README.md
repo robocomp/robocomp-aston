@@ -46,12 +46,13 @@ pip install -r requirements.txt
 
 #### [Installing CenterTrack](!https://github.com/xingyizhou/CenterTrack/blob/master/readme/INSTALL.md)
 ```
-cd $HOME/robocomp-aston/components/detection/HumanIdentification/MPTFeatures/lib/model/networks/
+cd $HOME/robocomp-aston/components/detection/HumanIdentification/MPTFeatures/src/lib/model/networks/
 git clone https://github.com/CharlesShang/DCNv2/
 cd DCNv2
 ./make.sh
 ```
 
+Note:- If you are facing issues installing look [here](https://github.com/xingyizhou/CenterTrack/issues)
 
 #### [Installing TorchReid](!https://github.com/KaiyangZhou/deep-person-reid#installation)
 ```
@@ -62,11 +63,19 @@ python setup.py develop
 ```
 
 #### Download Pretrained Weights
-download the models and store it here
+download the pretrained weights from links below, store them here:
 ```
 cd $HOME/robocomp-aston/components/detection/HumanIdentification/MPTFeatures/src/PretrainedModels
 ```
+
+Link to weights: 
 - Centrack trained on COCO dataset: [Official Site](https://drive.google.com/open?id=1tJCEJmdtYIh8VuN8CClGNws3YO7QGd40),  [Copy](https://drive.google.com/file/d/1lbT1AB6HmrsZog9OcehDMPxlwvc1gJdo/view?usp=sharing)
+
+After downloading the directory should look like this:
+```
+src/PretrainedModels
+└── coco_tracking.pth
+```
 
 
 #### Starting each component

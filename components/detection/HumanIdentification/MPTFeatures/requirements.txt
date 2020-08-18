@@ -1,4 +1,5 @@
 progress
+llvmlite==0.33.0
 numba
 torch
 pycocotools

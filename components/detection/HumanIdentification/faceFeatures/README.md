@@ -66,9 +66,40 @@ download the models, unzip the folder and store it here
 cd $HOME/robocomp-aston/components/detection/HumanIdentification/faceFeatures/src/PretrainedModels
 ```
 
-- Mt-cnn: [Link](https://drive.google.com/drive/folders/1vvoMe4tSzI59GjtRLtDJu8vkX4jxR06P?usp=sharing)
-- ArFace-MobileNet: [Link1](https://www.dropbox.com/s/akxeqp99jvsd6z7/model-MobileFaceNet-arcface-ms1m-refine-v1.zip?dl=0), [Link2](https://drive.google.com/drive/folders/1gdwQBSMr7dLyLUWoBAKw2IfBUJqZFNHv?usp=sharing)
-- ArcFace-Resnet100: [Link](https://www.dropbox.com/s/tj96fsm6t6rq8ye/model-r100-arcface-ms1m-refine-v2.zip?dl=0)
+Link to weights: 
+  - Mt-cnn: [Link](https://drive.google.com/drive/folders/1vvoMe4tSzI59GjtRLtDJu8vkX4jxR06P?usp=sharing)
+  - ArFace-MobileNet: [Link1](https://www.dropbox.com/s/akxeqp99jvsd6z7/model-MobileFaceNet-arcface-ms1m-refine-v1.zip?dl=0), [Link2](https://drive.google.com/drive/folders/1gdwQBSMr7dLyLUWoBAKw2IfBUJqZFNHv?usp=sharing)
+  - ArcFace-Resnet100: [Link](https://www.dropbox.com/s/tj96fsm6t6rq8ye/model-r100-arcface-ms1m-refine-v2.zip?dl=0)
+
+After downloading the directory should look like this:
+  ```
+  src/PretrainedModels
+  ├── model-r100-ii
+  │   ├── log
+  │   ├── model-0000.params
+  │   └── model-symbol.json
+  ├── model-y1-test2
+  │   ├── log
+  │   ├── model-0000.params
+  │   └── model-symbol.json
+  └── mtcnn-model
+      ├── det1-0001.params
+      ├── det1.caffemodel
+      ├── det1.prototxt
+      ├── det1-symbol.json
+      ├── det2-0001.params
+      ├── det2.caffemodel
+      ├── det2.prototxt
+      ├── det2-symbol.json
+      ├── det3-0001.params
+      ├── det3.caffemodel
+      ├── det3.prototxt
+      ├── det3-symbol.json
+      ├── det4-0001.params
+      ├── det4.caffemodel
+      ├── det4.prototxt
+      └── det4-symbol.json
+  ```
 
 
 
