@@ -1,5 +1,5 @@
 # gaitFeatures
-![Gait Recognition Image Image](../docs/images/gait_recognition.png)
+![Gait Recognition Image](../docs/gifs/walk.gif)
 
 > This component segements human from image provides features for gait recognition.   
 ---

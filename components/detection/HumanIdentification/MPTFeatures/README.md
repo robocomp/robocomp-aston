@@ -1,4 +1,7 @@
 # MPTFeatures(Multi-Person Tracking)
+
+![MPT Image](../docs/gifs/walk.gif)
+
 > This component tracks humans and assign them a tracking id. Also provides features based on apperance.  
 ---
 Note: This component is under development

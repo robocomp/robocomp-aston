@@ -1,7 +1,5 @@
 # faceFeatures (Face Recognition Component)
-![Face Recognition Image Image](../docs/images/face_recognition.png)
-
-
+![Face Recognition Image](../docs/gifs/face_recognition.gif)
 
 > This component detects multiple human face and provides features for face recognition.   
 ---

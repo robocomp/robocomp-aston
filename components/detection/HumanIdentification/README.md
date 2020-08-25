@@ -1,6 +1,9 @@
 # Human re-identification using multi-modal perception system
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/Lt7oiOuUIJA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+---
+<a href="https://www.youtube.com/embed/Lt7oiOuUIJA" ><img width="560" height="315" src="./docs/images/poster.png" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"> </a>
+
+---
 
 > This component uses modalities such as face-recognition,gait-recognition, multi-person tracking for human identification.
 ---

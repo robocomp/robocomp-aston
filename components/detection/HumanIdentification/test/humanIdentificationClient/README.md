@@ -1,5 +1,8 @@
 # Client for Human Identification
 
+![View1](../../docs/gifs/inference.gif)
+![View2](../../docs/gifs/inference_bye.gif)
+
 > This is a demo applcation to show the use-case of the modules in human identification project.     
 ---
 Note: This component is under development
