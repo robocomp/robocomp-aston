@@ -142,7 +142,24 @@ class SpecificWorker(GenericWorker):
         self.label2color = {} # Store random color for tracking ids 
         return True
 
+    def resize(self,frame,max_length=640):
+        """
+            # For faster computation resize the image to maximum size of 640
+            @params:
+                frame: image to be resized : np.darray HxWx3
+                max_length: maximum size of a dimension: int: default 640
+        """
 
+        if np.max(frame.shape) < 640:
+            return frame
+        elif frame.shape[0] > frame.shape[1]:
+            r = (frame.shape[1]*640)//frame.shape[0]
+            frame = cv2.resize(frame,(r,640)) 
+        else: 
+            r = (frame.shape[0]*640)//frame.shape[1]
+            frame = cv2.resize(frame,(640,r))
+
+        return frame 
     def read_frame(self):
         """
             For different sensors to take input, this method uses them to read each image
@@ -153,6 +170,9 @@ class SpecificWorker(GenericWorker):
             frame = np.fromstring(data.image, np.uint8).reshape((data.height, data.width, data.depth))
         elif type(self.cap) == cv2.VideoCapture:
             _,frame = self.cap.read()
+            if frame is not None:
+                frame = self.resize(frame) # Preprocess
+                # frame = frame.transpose((1,0,2))
         else:
             frame = None
             raise Error("Unable to load video from input")
@@ -170,13 +190,14 @@ class SpecificWorker(GenericWorker):
         # compute CODE
         try:
             frame = self.read_frame()
-            # frame = cv2.resize(frame,(640,360)) # For faster computation
             if frame is not None:
                 im = RoboCompMultiModalHumanIdentification.TImage()
                 im.height,im.width,im.depth = frame.shape
 
                 im.image = frame.tostring()
                 recognisedHumans = self.multimodalhumanidentification_proxy.getLabel(im)
+
+                frame = np.ascontiguousarray(frame) # Make compatile to preprocessing
 
                 for i in range(recognisedHumans.numhumans):
                     bbox = recognisedHumans.boundingboxes[i]
@@ -205,7 +226,7 @@ class SpecificWorker(GenericWorker):
                     if self.gui.intersect(bbox):
                         # Create highlight region
                         highlight = frame[ bbox[1]:bbox[3], bbox[0]:bbox[2],:]
-                        highlight = cv2.addWeighted(highlight, 0.5, np.full_like(highlight,255), 0.5, 1.0)
+                        # highlight = cv2.addWeighted(highlight, 0.5, np.full_like(highlight,255), 0.5, 1.0)
 
                         # Update image
                         frame[ bbox[1]:bbox[3], bbox[0]:bbox[2],:] = highlight
@@ -228,9 +249,11 @@ class SpecificWorker(GenericWorker):
 
                             self.setPeriod(50)
 
-
+                cv2.namedWindow('Human MultiModal Re-Identification', cv2.WND_PROP_FULLSCREEN)
+                cv2.setWindowProperty('Human MultiModal Re-Identification',cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
                 cv2.imshow('Human MultiModal Re-Identification',frame)
                 cv2.setMouseCallback('Human MultiModal Re-Identification',self.gui.update_mouse_location) # Need to find the location of 
+
             else:
                 print("Video Completed Closing")
 

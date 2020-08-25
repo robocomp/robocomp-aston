@@ -121,7 +121,7 @@ class SpecificWorker(GenericWorker):
         bbox_list = []
         tracking_list = []
         for r in ret['results']:
-            if r['class'] == 1 and np.abs((r['bbox'][3]-r['bbox'][1])*(r['bbox'][2]-r['bbox'][0])) > 4096: # If person is detected and area greater than 64x64
+            if r['class'] == 1 and np.abs((r['bbox'][3]-r['bbox'][1])*(r['bbox'][2]-r['bbox'][0])) > 400: # If person is detected and area greater than 20x20
                 bbox_list.append(r['bbox'].astype(np.uint32))
                 tracking_list.append(r['tracking_id'])
         
@@ -139,6 +139,8 @@ class SpecificWorker(GenericWorker):
         images = [ np.fromstring(im.image, np.uint8).reshape((im.height, im.width, im.depth)) for im in imlist] # Convert TImage to numpy array to send as input to the model    
         
         features = self.reid_extractor(images).data.cpu().numpy()
+
+        features /= np.linalg.norm(features,axis=1,keepdims=True) + 1e-8# Normalize for comparision
 
         reidFeatures = RoboCompMPTFeatures.Features()
         for i,feature in enumerate(features):

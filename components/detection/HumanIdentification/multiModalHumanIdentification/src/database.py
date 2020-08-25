@@ -93,8 +93,9 @@ class Database():
                 thresh: distance threshold, if disance less than this then accepted as match
 
             @returns: 
-                label : 2D string array shape: Nxnn np.str_    
-                distance: distance to each neighbor: Nxnn np.ndarray  
+                not_found:    Index of features whose person is not detected
+                found:        Index of features whose person is  detected
+                found_labels: Labels of features whose person is  detected
         """
 
         # type check
@@ -117,6 +118,8 @@ class Database():
         # Search index and dist
         ninds,dists = self.kdtree.query_radius(query_features,r=thresh,return_distance=True)  
         
+        # print("Dists:",dists)
+
         found = []
         found_labels = []
         not_found = []
@@ -172,7 +175,7 @@ class Database():
                     f"size of features and images not same:{len(features)} {len(images)}"
 
 
-        print("Reached Here")
+        # print("Reached Here")
         if os.path.isfile(os.path.join(self.datadir,name+'.h5')):
             raise FileExistsError("Unable to save. {name} already exists")
 
@@ -186,19 +189,12 @@ class Database():
         else: 
             # Choose random k
             inds = np.random.permutation(N)[:k]  
-        print("Inds:",inds)
 
         hf.create_dataset('feature',data=features[inds])        
         hf.create_dataset('image',data=images[inds])
-
-        print(hf,hf.keys(),hf['feature'],hf['image'])
-
         hf.close()
 
         # Add to current list    
-        print(self.__feature_list.shape)
-        print(features[inds].shape)
-
         if len(self.__feature_list) == 0:
             self.__feature_list = features[inds]
             self.__image_list = images[inds]
@@ -272,7 +268,7 @@ class LiveDatabase():
         N,D = query_features.shape
 
         if len(self.__feature_list) == 0: # If no person exists in database
-            return np.full(N,-1),np.full(N,np.inf) 
+            return [],[] 
 
         # Check dimension size
         assert D==self.__feature_list[0].shape[0],\
@@ -290,8 +286,6 @@ class LiveDatabase():
         for i,id in enumerate(tracking_id_list):
             cost_matrix[:,i] = np.min(dist_matrix[:,self.__unknown_id_dict[id]],axis=1)
 
-        # print(cost_matrix)
-
         # Using hungarian algorithm(linear assungment for bipartite matching) to find the best match 
         row_ind,col_ind = linear_sum_assignment(cost_matrix)
 
@@ -306,10 +300,10 @@ class LiveDatabase():
         # print("Dist:",dists)
 
         # Apply thresholding
-        labels[ dists > thresh] = -1
-        dists[  dists > thresh] = np.inf
+        label_indexes = np.where(dists < thresh)[0] # Index of people detected from the list
+        labels    = labels[label_indexes]           # Their corresponding tracking ids
 
-        return labels,dists
+        return label_indexes,labels
         
 
     def addLabel(self,ids,features,images):
@@ -376,8 +370,6 @@ class LiveDatabase():
                 images: Images/Gait Sequence stored for future use
                             NxD np.ndarray 
         """
-
-        print(self.__unknown_id_dict,tr_ids)
 
         if len(self.__unknown_id_dict) == 0: # Nothing in database
             return [],[]

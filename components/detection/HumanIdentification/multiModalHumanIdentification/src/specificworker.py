@@ -125,10 +125,8 @@ class SpecificWorker(GenericWorker):
         assert tr_id == self.id2label._find(tr_id),f"Tracking id:{tr_id} not a parent in id2label" 
 
         children = self.id2label.children(tr_id)
-        print("children",children)
         for modality in self.database:
             featurelist,imagelist = self.live_database[modality].deleteLabel(children) # Remove from the live list
-            print(len(featurelist))
             try:
                 self.database[modality].addLabel(label,featurelist,imagelist,k=k) # Add to the database and create and .h5 file
             except Exception: 
@@ -192,6 +190,97 @@ class SpecificWorker(GenericWorker):
         new_im.image = orig_im.image
         return new_im
 
+
+
+    def MultiModalHumanIdentification_getLabel(self, im):
+
+        # Detect humans present in the image 
+        reid_im = self._convert_TImage_object(im,RoboCompMPTFeatures.TImage()) # Required by robocomp to make object compatible across components
+        detectedHumans = self.mptfeatures_proxy.detectHumans(reid_im) # Contains the tracking ids, bounding boxes of person detected in the frame
+
+        # This function calls mptfeatures_proxy.getReidFeature for new tracking ids. 
+        # This will help in finding association with previous tracking ids
+        try:
+            self.run_human_reidentification(im,detectedHumans)  
+        except Exception as e:
+            traceback.print_exc()
+            print("Error in running human re-identification module:",e)
+
+        # This function calls facefeatures_proxy.getFaceFeature for getting face features if face is detected. 
+        try:
+            self.run_face_recongnition(im,detectedHumans)  
+        except Exception as e:
+            traceback.print_exc()
+            print("Error in running face recognition module:",e)
+        # This function calls gaitfeatures_proxy.getFaceFeature for getting gait features if face is detected. 
+        try:
+            self.run_gait_recongnition(im,detectedHumans)
+        except Exception as e:
+            traceback.print_exc()
+            print("Error in running gait recognition module:",e)
+            
+        # Copy all data to Robocomp.RecognisedHumans class     
+        recognisedHumans = RoboCompMultiModalHumanIdentification.RecognisedHumans()
+        recognisedHumans.numhumans = len(detectedHumans.boundingboxes)
+        recognisedHumans.boundingboxes = list(detectedHumans.boundingboxes)
+        recognisedHumans.labellist = self.id2label.query(detectedHumans.trackingidlist)
+
+        return recognisedHumans
+        # # # Get Reid Features from RoboCompReID features
+        # # reid_im = self._convert_TImage_object(im,RoboCompMPTFeatures.TImage()) # Make object compatible across components
+        # # face_features = self.mptfeatures_proxy.getReidFeature(reid_im)
+    # ===================================================================
+    # ===================================================================
+
+
+    def run_human_reidentification(self,im,detectedHumans):
+        """
+            A person can have multiple tracking ids, hence first step is 
+            to use the apperance to find associations with previous tracklets. 
+            To do this we use human re-identification module, which uses human apperance for tracking
+            
+            @params:
+                im: contains the input image in the form of Robocomp.TImage
+                detectedHumans: RoboCompMPTFeatures.detectedHumans class containing the tracking ids and respective bounding box
+
+        """
+        
+        # If new tracking id detected then add to id2label data structure
+        new_ind = self.id2label.not_present(detectedHumans.trackingidlist)
+        if len(new_ind) > 0:
+            
+            # Convert im to numpy array         
+            arr = np.fromstring(im.image, np.uint8).reshape((im.height, im.width, im.depth))
+
+            # Create the input for reid & gait component             
+            reid_person_list = RoboCompMPTFeatures.TImageList()
+            store_im = []
+            for i in new_ind: # Segement all the humans, create the sub-image and add to TImageList clasd 
+                bbox = detectedHumans.boundingboxes[i]
+                new_image = arr[bbox[1]:bbox[3],bbox[0]:bbox[2],:]
+
+                store_im.append(cv2.resize(new_image,(128,256)))
+
+                nim = RoboCompMPTFeatures.TImage()
+                nim.height, nim.width, nim.depth = new_image.shape
+                nim.image = new_image.tostring()
+                reid_person_list.append(nim)
+
+
+            # Calculate reid features
+            reid_features = self.mptfeatures_proxy.getReidFeature(reid_person_list) 
+            reid_features = np.array(reid_features)
+            
+            # Search current reid tracking list     
+            label_indexes,labels = self.live_database['reid'].query(reid_features,thresh=0.55) # Find tracking ids similiar to new features 
+            self.id2label.add([detectedHumans.trackingidlist[new_ind[i]] for i in label_indexes],labels)
+            self.live_database['reid'].addLabel([detectedHumans.trackingidlist[i] for i in new_ind],reid_features,np.array(store_im))            
+
+
+            # for i,ind in enumerate(new_ind):
+            #     print(f"New:{detectedHumans.trackingidlist[ind]} -> {labels[i]} dists:{dists[i]}")
+
+
     def _find_face_ind(self,human_bbox,face_bbox):
         """
             Given human bounding boxes and face bounding box, check if able to detect face, if yes, then return its index 
@@ -201,8 +290,6 @@ class SpecificWorker(GenericWorker):
             
             @return: face_inds: index of face if inside human bounding box 
         """    
-        # print("Human BBOX:",human_bbox)
-        # print("Face BBOX:",face_bbox)
 
         if len(face_bbox) == 0: # If not face detected, return nothing
             return [],[]
@@ -210,12 +297,8 @@ class SpecificWorker(GenericWorker):
         human_inds = []
         face_inds = []
         for i,bbox in enumerate(human_bbox):
-            # print("BBox:",bbox)
             cond1 =  np.logical_and(face_bbox[:,0] > bbox[0], face_bbox[:,1] > bbox[1])  
             cond2 =  np.logical_and(face_bbox[:,2] < bbox[2], face_bbox[:,3] < bbox[3])
-
-            # print(cond1)
-            # print(cond2)
 
             inds = np.where( np.logical_and(cond1,cond2) )[0]
 
@@ -239,63 +322,50 @@ class SpecificWorker(GenericWorker):
         return human_inds,face_inds 
 
 
-    def MultiModalHumanIdentification_getLabel(self, im):
+    def run_face_recongnition(self,im,detectedHumans):
+        """
+            We use face recognition to find associtions with previous tracklets and  
+            labels of unkown persons(here unknown is defined as person not recognized from the database)              
+        """
 
-        # Convert im to numpy array         
-        arr = np.fromstring(im.image, np.uint8).reshape((im.height, im.width, im.depth))
+        detectFace = None # Store detected faces here
 
-        # Detect humans present in the image 
-        reid_im = self._convert_TImage_object(im,RoboCompMPTFeatures.TImage()) # Required by robocomp to make object compatible across components
-        detectedHumans = self.mptfeatures_proxy.detectHumans(reid_im) # Contains the tracking ids, bounding boxes of person detected in the frame
-
-
-        # If new tracking id detected then add to id2label data structure
+        # If a new person is detected and reid unable to find its association
         new_ind = self.id2label.not_present(detectedHumans.trackingidlist)
-        if len(new_ind) > 0:
-            
-            # A person can have multiple tracking ids, hence first step is 
-            # to use the apperance to find associations with previous tracklets. 
-            # To do this we use human re-identification module 
-
-            # Create the input for reid & gait component             
-            reid_person_list = RoboCompMPTFeatures.TImageList()
-            store_im = []
-            for i in new_ind: # Segement all the humans, create the sub-image and add to TImageList clasd 
-                bbox = detectedHumans.boundingboxes[i]
-                new_image = arr[bbox[1]:bbox[3],bbox[0]:bbox[2],:]
-
-                store_im.append(cv2.resize(new_image,(128,256)))
-
-                nim = RoboCompMPTFeatures.TImage()
-                nim.height, nim.width, nim.depth = new_image.shape
-                nim.image = new_image.tostring()
-                reid_person_list.append(nim)
-
-
-            # Calculate reid features
-            reid_features = self.mptfeatures_proxy.getReidFeature(reid_person_list) 
-            reid_features = np.array(reid_features)
-            
-            # Search current reid tracking list     
-            labels,dists = self.live_database['reid'].query(reid_features,thresh=10) # Find tracking ids similiar to new features 
-            self.id2label.add([detectedHumans.trackingidlist[i] for i in new_ind],labels)
-            self.live_database['reid'].addLabel([detectedHumans.trackingidlist[i] for i in new_ind],reid_features,np.array(store_im))            
-
-
-            # for i,ind in enumerate(new_ind):
-            #     print(f"New:{detectedHumans.trackingidlist[ind]} -> {labels[i]} dists:{dists[i]}")
-
-
-        # Next we use face & gait recognition to find labels of unkown persons => here unknown is defined as person not recognized from the database              
-        unknown_inds,unknown_ids = self.id2label.find_unknown(detectedHumans.trackingidlist)
-        # print("Remaining ids:",unknown_ids)
-        unknown_inds = []
-        if len(unknown_inds) > 0: # If idenity of the person found 
-            # Get face features from RoboCompFaceFeatures 
+        if len(new_ind) > 0:        
             face_im = self._convert_TImage_object(im,RoboCompFaceFeatures.TImage()) # Make object compatible across components
             # First detect faces 
             detectface = self.facefeatures_proxy.detectFace(face_im) # Contains bounding boxes of faces detected and aligned them for feature extraction
 
+            # Check if the bounding box of the face is inside the bounding box of the person 
+            human_inds,face_inds = self._find_face_ind([detectedHumans.boundingboxes[i] for i in new_ind ],np.array(detectface.boundingboxes))
+            # print("Intersection Detected:",human_inds,face_inds)
+
+            # If any face is present inside the persons bounding box
+            if len(human_inds) > 0:
+                face_features = self.facefeatures_proxy.getFaceFeature([detectface.alignedfaces[i] for i in face_inds])
+                face_features = np.array(face_features)
+
+                # print("Not found:",not_found)
+                # For remaining inds search the current face live list     
+                label_indexes,labels = self.live_database['face'].query(face_features,thresh=0.55) # Find tracking ids similiar to new features 
+                self.id2label.add([detectedHumans.trackingidlist[new_ind[i]] for i in label_indexes],labels)
+
+        
+        # If person not detected/identified, add as unknown, then run recognition module
+        new_ind = self.id2label.not_present(detectedHumans.trackingidlist)
+        self.id2label.add([detectedHumans.trackingidlist[i] for i in new_ind],[-1]*len(new_ind))
+
+
+        unknown_inds,unknown_ids = self.id2label.find_unknown(detectedHumans.trackingidlist)
+        # print("Remaining ids:",unknown_ids)
+        # unknown_inds = []
+        if len(unknown_inds) > 0: # If idenity of the person found 
+            # Get face features from RoboCompFaceFeatures 
+            if detectFace is None:
+                face_im = self._convert_TImage_object(im,RoboCompFaceFeatures.TImage()) # Make object compatible across components
+                # First detect faces 
+                detectface = self.facefeatures_proxy.detectFace(face_im) # Contains bounding boxes of faces detected and aligned them for feature extraction
             # Check if the bounding box of the face is inside the bounding box of the person 
             human_inds,face_inds = self._find_face_ind([detectedHumans.boundingboxes[i] for i in unknown_inds ],np.array(detectface.boundingboxes))
             # print("Intersection Detected:",human_inds,face_inds)
@@ -308,20 +378,11 @@ class SpecificWorker(GenericWorker):
                 # print("Face Features:",face_features.shape)
 
                 # Search the face database
-                not_found,found,found_labels = self.database['face'].query(face_features,thresh=0.55) # Find tracking ids similiar to face features 
+                not_found,found,found_labels = self.database['face'].query(face_features,thresh=0.8) # Find tracking ids similiar to face features 
 
                 # Update the labels with string 
                 # print(f"Found Inds:{found} String labels:{found_labels}, Updating tracking ids:{[unknown_ids[human_inds[i]] for i in found]}")
                 self.id2label.update([unknown_ids[human_inds[i]] for i in found],found_labels) 
-
-
-                # print("Not found:",not_found)
-                # For remaining inds search the current face live list     
-                labels,dists = self.live_database['face'].query(face_features[not_found],thresh=0.55) # Find tracking ids similiar to new features 
-                store_ind = [ i for i,x in enumerate(labels) if x !=-1 ] 
-
-                # Add newly found mapping between not found tracking ids 
-                self.id2label.update([unknown_ids[human_inds[not_found[i]]] for i in store_ind],labels[store_ind])
 
                 # Add Data about unknown label to face live list 
                 # Find aligned faces
@@ -331,11 +392,14 @@ class SpecificWorker(GenericWorker):
                     new_im = np.fromstring(new_im.image,np.uint8).reshape((new_im.height, new_im.width, new_im.depth))
                     store_im.append(new_im)
 
+
                 self.live_database['face'].addLabel([unknown_ids[human_inds[i]] for i in not_found],face_features[not_found],np.array(store_im))
 
-
-        # Use gait recognition
-        unknown_inds,unknown_ids = self.id2label.find_unknown(detectedHumans.trackingidlist)            
+    def run_gait_recongnition(self,im,detectedHumans):
+        """
+            Use gait recognition
+        """
+        unknown_inds,unknown_ids = self.id2label.find_unknown(detectedHumans.trackingidlist)   
         if len(unknown_inds) > 0: # If idenity of the person found 
             # from Gait module return features for tracking ind 
 
@@ -351,30 +415,15 @@ class SpecificWorker(GenericWorker):
                 # print(f"Found Inds:{found} String labels:{found_labels}, Updating tracking ids:{[unknown_ids[human_inds[i]] for i in found]}")
                 self.id2label.update([unknown_ids[present_inds[i]] for i in found],found_labels) 
 
-
-                # print("Not found:",not_found)
-                # For remaining inds search the current face live list     
-                labels,dists = self.live_database['gait'].query(gait_features[not_found],thresh=0.55) # Find tracking ids similiar to new features 
-                store_ind = [ i for i,x in enumerate(labels) if x !=-1 ] 
-
-                # Add newly found mapping between not found tracking ids 
-                self.id2label.update([unknown_ids[present_inds[not_found[i]]] for i in store_ind],labels[store_ind])
-
-                # Add Data about unknown label to face live list 
-                self.live_database['gait'].addLabel([unknown_ids[present_inds[i]] for i in not_found],gait_features[not_found],np.zeros((len(not_found),64,64)))
-
         # Store remaining data        
         unknown_inds,unknown_ids = self.id2label.find_unknown(detectedHumans.trackingidlist)            
         if len(unknown_inds) > 0:
+            # Convert im to numpy array         
+            arr = np.fromstring(im.image, np.uint8).reshape((im.height, im.width, im.depth))
+
             gait_person_list = RoboCompGaitFeatures.TImages()
             for i in unknown_inds: # Segement all the humans, create the sub-image and add to TImageList clasd 
                 bbox = detectedHumans.boundingboxes[i]
-                if bbox[1] == bbox[3]:
-                    bbox[3] += 1
-
-                if bbox[0] == bbox[2]:
-                    bbox[2] += 1
-
                 new_image = arr[bbox[1]:bbox[3],bbox[0]:bbox[2],:]
 
                 nim = RoboCompGaitFeatures.TImage()
@@ -385,20 +434,6 @@ class SpecificWorker(GenericWorker):
             # Store values for gait recognition
             self.gaitfeatures_proxy.storeGaitFeature(gait_person_list,unknown_ids)
 
-
-
-        # Copy all data to Robocomp.RecognisedHumans class     
-        recognisedHumans = RoboCompMultiModalHumanIdentification.RecognisedHumans()
-        recognisedHumans.numhumans = len(detectedHumans.boundingboxes)
-        recognisedHumans.boundingboxes = list(detectedHumans.boundingboxes)
-        recognisedHumans.labellist = self.id2label.query(detectedHumans.trackingidlist)
-
-        return recognisedHumans
-        # # # Get Reid Features from RoboCompReID features
-        # # reid_im = self._convert_TImage_object(im,RoboCompMPTFeatures.TImage()) # Make object compatible across components
-        # # face_features = self.mptfeatures_proxy.getReidFeature(reid_im)
-    # ===================================================================
-    # ===================================================================
 
 
     ######################

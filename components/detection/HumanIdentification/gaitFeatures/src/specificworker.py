@@ -99,20 +99,21 @@ class SpecificWorker(GenericWorker):
             # Create segmentation mask 
             try:
                 masklist = self.segmentation_inference.run([np.fromstring(im.image,np.uint8).reshape((im.height,im.width,im.depth)) for im in self.input_image_list]) # Extract segmentation mask from person's image    
+                # Store segmentation mask by tracking ids
+                for tr_id,mask in zip(self.input_tracking_id,masklist):
+                    if mask.sum() < 400: # If white pixels less than 10% of the data continue
+                        continue 
+                    if tr_id not in self.id2mask:
+                        self.id2mask[tr_id] = []
+                    self.id2mask[tr_id].append(mask)
+
+                    if len(self.id2mask[tr_id]) > 32: # Max length 32
+                        self.id2mask[tr_id] = self.id2mask[tr_id][:-32]
+
             except Exception as e:
                 traceback.print_exc()
                 print([ (im.height,im.width,im.depth) for im in self.input_image_list])
 
-            # Store segmentation mask by tracking ids
-            for tr_id,mask in zip(self.input_tracking_id,masklist):
-                if mask.sum() < 400: # If white pixels less than 10% of the data continue
-                    continue 
-                if tr_id not in self.id2mask:
-                    self.id2mask[tr_id] = []
-                self.id2mask[tr_id].append(mask)
-
-                if len(self.id2mask[tr_id]) > 32: # Max length 32
-                    self.id2mask[tr_id] = self.id2mask[tr_id][:-32]
 
 
             self.lock = True
@@ -141,6 +142,7 @@ class SpecificWorker(GenericWorker):
                     silho = torch.Tensor(self.id2mask[ind]).unsqueeze(0)
                     feature,_ = self.gait_model(silho.cuda() if self.opts.gpu >= 0 else silho) # Call module to get features
                     feature = feature.view(-1).data.cpu().numpy()
+                    feature /= np.linalg.norm(feature)
                 else:
                     feature = []
             else:

@@ -1,7 +1,7 @@
 #!/bin/bash 
 
 # # Run face features
-gnome-terminal --disable-factory -- /bin/bash -c --disable-factory 'cd $PWD/faceFeatures; cmake . ; make ; python3 src/faceFeatures.py' &
+gnome-terminal --disable-factory -- /bin/bash -c 'cd $PWD/faceFeatures; cmake . ; make ; python3 src/faceFeatures.py' &
 
 # # Run Reid Features for tracking humans
 gnome-terminal --disable-factory -- /bin/bash -c 'cd $PWD/MPTFeatures ;cmake . ; make ; python3 src/MPTFeatures.py' &

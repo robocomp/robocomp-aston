@@ -1,7 +1,4 @@
 # MPTFeatures(Multi-Person Tracking)
-![Tracking Image](project-image-url)
-
-
 > This component tracks humans and assign them a tracking id. Also provides features based on apperance.  
 ---
 Note: This component is under development
@@ -39,52 +36,14 @@ b) **[Torch-reid](https://github.com/KaiyangZhou/deep-person-reid)**
 
 ## How To Use
 
-#### Requirements
-```
-pip install -r requirements.txt
-```
+**Note:- Installation procedure provided [here](../README.md#how-to-use)**  
 
-#### [Installing CenterTrack](!https://github.com/xingyizhou/CenterTrack/blob/master/readme/INSTALL.md)
-```
-cd $HOME/robocomp-aston/components/detection/HumanIdentification/MPTFeatures/src/lib/model/networks/
-git clone https://github.com/CharlesShang/DCNv2/
-cd DCNv2
-./make.sh
-```
-
-Note:- If you are facing issues installing look [here](https://github.com/xingyizhou/CenterTrack/issues)
-
-#### [Installing TorchReid](!https://github.com/KaiyangZhou/deep-person-reid#installation)
-```
-git clone https://github.com/KaiyangZhou/deep-person-reid.git
-cd deep-person-reid/
-pip install -r requirements.txt
-python setup.py develop
-```
-
-#### Download Pretrained Weights
-download the pretrained weights from links below, store them here:
-```
-cd $HOME/robocomp-aston/components/detection/HumanIdentification/MPTFeatures/src/PretrainedModels
-```
-
-Link to weights: 
-- Centrack trained on COCO dataset: [Official Site](https://drive.google.com/open?id=1tJCEJmdtYIh8VuN8CClGNws3YO7QGd40),  [Copy](https://drive.google.com/file/d/1lbT1AB6HmrsZog9OcehDMPxlwvc1gJdo/view?usp=sharing)
-
-After downloading the directory should look like this:
-```
-src/PretrainedModels
-└── coco_tracking.pth
-```
-
-
-#### Starting each component
+#### Starting component
 For each module open a new terminal(Crtl-Alt-T)  
 ```
 cd $HOME/robocomp-aston/components/detection/HumanIdentification/MPTFeatures
 cmake . 
 make
-cp etc/config etc/config-run
 ```
 *To avoid changing the **config** file in the repository, we can copy it to **config-new** in the component's home directory, so changes will remain untouched by future git pulls.*
 

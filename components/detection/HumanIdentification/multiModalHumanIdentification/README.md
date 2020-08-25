@@ -36,10 +36,7 @@ This component has 3 tasks:
 
 ## How To Use
 
-#### Requirements
-```
-pip install -r requirements.txt
-```
+**Note:- Installation procedure provided [here](../README.md#how-to-use)**  
 
 #### Starting component
 For each module open a new terminal(Crtl-Alt-T)  
@@ -47,7 +44,6 @@ For each module open a new terminal(Crtl-Alt-T)
 cd $HOME/robocomp-aston/components/detection/HumanIdentification/multiModalHumanIdentification
 cmake . 
 make
-cp etc/config etc/config-run
 ```
 *To avoid changing the **config** file in the repository, we can copy it to **config-new** in the component's home directory, so changes will remain untouched by future git pulls.*
 
@@ -56,7 +52,7 @@ After editing the new config file we can run each component
 python3 src/multiModalHumanIdentification.py 
 ```
 
-*By default --human_reid_threshold = 10, --face_recognition_threshold = 0.55,  --gait_recognition_threshold = 0.1. See [opt](./src/multiModalHumanIdentification.py) to see parameters for the module*
+*By default --human_reid_threshold = 0.55, --face_recognition_threshold = 0.55,  --gait_recognition_threshold = 0.1. See [opt](./src/multiModalHumanIdentification.py) to see parameters for the module*
 
 ---
 
@@ -64,12 +60,30 @@ python3 src/multiModalHumanIdentification.py
 
 Below I have explained, important details of the implmentation  
 
-#### Tracking indexes and mapping to labels
+#### [TrackingId2Label](./src/trackingId2Label.py)
+Center track provides small tracklets for every person identified. This class mapping trackelts to labels. 
 
-#### Database 
-
-#### LiveDatabase / Gallery 
-
+In a dictionary we store the mapping from a tracking Id(obtained from Center Track) of a person to the string label 
+```
+label =
+    "unknown:tracking_id" if id2label[id] = -1 
+    "name" if id2label[id] = string
+    id2label[id2label[id]] if id2label[id] = int # A person can have multiple tracking id (due to occlusion or re-apperance) 
+```
+#### [Database](./src/database.py) 
+For different modality we require a quick search in the database to return the label of the person present. 
+```
+- Format of stored data in a folder: 
+    -- datadir 
+        -- name1.h5
+        -- name2.h5 
+            .
+            .   
+            .   
+        -- nameN.h5
+```
+#### [LiveDatabase / Gallery](./src/database.py)
+When the component is running we would need to store data about unknown classes 
 
 
 

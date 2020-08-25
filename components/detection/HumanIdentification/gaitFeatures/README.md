@@ -27,12 +27,12 @@ Two modalities can be used for gait recognition:
   2. [GEI (Gait Energy Image)](https://ieeexplore.ieee.org/document/1561189), (TPAMI-2005)
 
 - Skeleton based gait recognition
-  1. [Skeleton extracted fom openpose](!https://docs.google.com/presentation/d/1PaWISX7MiiflgPgr5fwqaIj4WFN5gD5Q0GeodmvIK_U/edit?usp=sharing) 
+  1. [Skeleton extracted fom openpose](https://docs.google.com/presentation/d/1PaWISX7MiiflgPgr5fwqaIj4WFN5gD5Q0GeodmvIK_U/edit?usp=sharing) 
 
 
 ![alt-text](../docs/images/performance_gait.png)
 
-**Fig-1. Results on [CASIA-B](!http://www.cbsr.ia.ac.cn/english/Gait%20Databases.asp) dataset, ICIP 2011**
+**Fig-1. Results on [CASIA-B](http://www.cbsr.ia.ac.cn/english/Gait%20Databases.asp) dataset, ICIP 2011**
 
 ![alt-text](../docs/images/time_gait.png)
     
@@ -45,27 +45,7 @@ Two modalities can be used for gait recognition:
 
 ## How To Use
 
-#### Requirements
-```
-pip install -r requirements.txt
-```
-#### Download Pretrained Weights
-download the pretrained weights from links below, store them here:
-```
-cd $HOME/robocomp-aston/components/detection/HumanIdentification/gaitFeatures/src/PretrainedModels
-```
-Links to wieights: 
-  - GaitSet: [Official](https://github.com/AbnerHqC/GaitSet/blob/master/work/checkpoint/GaitSet/GaitSet_CASIA-B_73_False_256_0.2_128_full_30-80000-encoder.ptm), [Copy](https://drive.google.com/file/d/1SUOPjFBoci4MuXwUgG5arvVzeAw-t7j7/view?usp=sharing)
-  - Human Segmentation(UNet): [Official](https://drive.google.com/file/d/14QxasSCcL_ij7NHR7Fshx5fi5Sc9MleD/view?usp=sharing), [Copy](https://drive.google.com/file/d/14QxasSCcL_ij7NHR7Fshx5fi5Sc9MleD/view?usp=sharing)
-
-After downloading the directory should look like this:
-```
-src/PretrainedModels
-├── GaitSet_CASIA-B_73_False_256_0.2_128_full_30-80000-encoder.ptm
-└── UNet_ResNet18.pth
-```
-
-
+**Note:- Installation procedure provided [here](../README.md#how-to-use)**  
 
 #### Starting component
 For each module open a new terminal(Crtl-Alt-T)  

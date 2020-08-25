@@ -31,17 +31,19 @@ class TrackingId2Label():
     def _find(self,ind):
         if ind not in self.dict:
             raise KeyError(f"Unable to find {ind} in dictionary")
+        try:
+            if type(self.dict[ind]) == int:
+                if self.dict[ind] == -1:
+                    return ind
+                else: 
+                    return self._find(self.dict[ind])
+            elif type(self.dict[ind]) == str:
+                return self.dict[ind]
 
-        if type(self.dict[ind]) == int:
-            if self.dict[ind] == -1:
-                return ind
             else: 
-                return self._find(self.dict[ind])
-        elif type(self.dict[ind]) == str:
-            return self.dict[ind]
-
-        else: 
-            raise KeyError(f"During query ind got:{type(self.dict[ind])} only int/str accepted")
+                raise KeyError(f"During query ind got:{type(self.dict[ind])} only int/str accepted")
+        except RecursionError as r:
+            print(f"[RecursionError]: dict[{ind}]:{self.dict[ind]}::",r) 
 
     def children(self,ind):
         """
@@ -151,6 +153,8 @@ class TrackingId2Label():
             # Assert only int or str type passed as input            
             assert type(l) == int or type(l) == str,f"Label of type:{type(l)} only int/str allowed"
 
+            # Assert tr_id != l 
+            assert l != tr_id, "Error tr_id and label passes as same value"            
             self.dict[tr_id] = l # Add label
 
     def update(self,tracking_inds,new_label):

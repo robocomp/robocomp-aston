@@ -28,18 +28,12 @@ To evaluate:
 
 ## How To Use
 
-#### Requirements
-```
-pip install -r requirements.txt
-```
-
 #### Starting component
 For each module open a new terminal(Crtl-Alt-T)  
 ```
 cd $HOME/robocomp-aston/components/detection/HumanIdentification/multiModalHumanIdentification
 cmake . 
 make
-cp etc/config etc/config-run
 ```
 *To avoid changing the **config** file in the repository, we can copy it to **config-new** in the component's home directory, so changes will remain untouched by future git pulls.*
 

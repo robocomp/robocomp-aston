@@ -1,7 +1,6 @@
 # Human re-identification using multi-modal perception system
 
-![Project Image](project-image-url)
-
+<iframe width="560" height="315" src="https://www.youtube.com/embed/Lt7oiOuUIJA" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 > This component uses modalities such as face-recognition,gait-recognition, multi-person tracking for human identification.
 ---
@@ -61,22 +60,118 @@ This component will make a call to different components, combine their features 
 #### Installing robocomp
 Use the steps provided at this link: https://github.com/robocomp/robocomp#installation-itself 
 
+#### Requirements
+```
+pip install -r requirements.txt
+```
+
 #### Installing modules
 
-Use the steps given in the links below for installing each module
-1. [MPTFeatures](./MPTFeatures/README.md#how-to-use)
-2. [faceFeatures](./faceFeatures/README.md#how-to-use)
-3. [gaitFeatures](./gaitFeatures/README.md#how-to-use)
-4. [multiModalHumanIdentification](./multiModalHumanIdentification/README.md#how-to-use)
-5. [humanIdentificationClient](./test/humanIdentificationClient/README.md#how-to-use) 
-6. [CameraSimpleProxy](../../hardware/camera/camerasimple/README.md)
+#### [MPTFeatures](./MPTFeatures/README.md#how-to-use)
+
+
+- [Installing CenterTrack](https://github.com/xingyizhou/CenterTrack/blob/master/readme/INSTALL.md)
+    ```
+    cd $HOME/robocomp-aston/components/detection/HumanIdentification/MPTFeatures/src/lib/model/networks/
+    git clone https://github.com/CharlesShang/DCNv2/
+    cd DCNv2
+    sudo python3 setup.py build develop
+    ```
+
+    Note:- If you are facing issues installing look [here](https://github.com/xingyizhou/CenterTrack/issues)
+
+- [Installing TorchReid](https://github.com/KaiyangZhou/deep-person-reid#installation)
+    ```
+    git clone https://github.com/KaiyangZhou/deep-person-reid.git
+    cd deep-person-reid/
+    pip install -r requirements.txt
+    sudo python3 setup.py develop
+    ```
+
+- Download Pretrained Weights & store them here:
+    ```
+    cd $HOME/robocomp-aston/components/detection/HumanIdentification/MPTFeatures/src/PretrainedModels
+    ```
+
+    Link to weights: 
+    - Centrack trained on COCO dataset: [Official Site](https://drive.google.com/open?id=1tJCEJmdtYIh8VuN8CClGNws3YO7QGd40),  [Copy](https://drive.google.com/file/d/1lbT1AB6HmrsZog9OcehDMPxlwvc1gJdo/view?usp=sharing)
+
+    After downloading the directory should look like this:
+    ```
+    MPTFeatures/src/PretrainedModels
+    └── coco_tracking.pth
+    ```
+
+#### [faceFeatures](./faceFeatures/README.md#how-to-use)
+
+- Download Pretrained Weights, unzip the folder and store it here
+    ```
+    cd $HOME/robocomp-aston/components/detection/HumanIdentification/faceFeatures/src/PretrainedModels
+    ```
+
+    Link to weights: 
+    - Mt-cnn: [Link](https://drive.google.com/drive/folders/1vvoMe4tSzI59GjtRLtDJu8vkX4jxR06P?usp=sharing)
+    - ArFace-MobileNet: [Link1](https://www.dropbox.com/s/akxeqp99jvsd6z7/model-MobileFaceNet-arcface-ms1m-refine-v1.zip?dl=0), [Link2](https://drive.google.com/drive/folders/1gdwQBSMr7dLyLUWoBAKw2IfBUJqZFNHv?usp=sharing)
+    - ArcFace-Resnet100: [Link](https://www.dropbox.com/s/tj96fsm6t6rq8ye/model-r100-arcface-ms1m-refine-v2.zip?dl=0)
+
+    After downloading the directory should look like this:
+    ```
+    src/PretrainedModels
+    ├── model-r100-ii
+    │   ├── log
+    │   ├── model-0000.params
+    │   └── model-symbol.json
+    ├── model-y1-test2
+    │   ├── log
+    │   ├── model-0000.params
+    │   └── model-symbol.json
+    └── mtcnn-model
+        ├── det1-0001.params
+        ├── det1.caffemodel
+        ├── det1.prototxt
+        ├── det1-symbol.json
+        ├── det2-0001.params
+        ├── det2.caffemodel
+        ├── det2.prototxt
+        ├── det2-symbol.json
+        ├── det3-0001.params
+        ├── det3.caffemodel
+        ├── det3.prototxt
+        ├── det3-symbol.json
+        ├── det4-0001.params
+        ├── det4.caffemodel
+        ├── det4.prototxt
+        └── det4-symbol.json
+    ```
+
+
+#### [gaitFeatures](./gaitFeatures/README.md#how-to-use)
+
+- Download Pretrained Weights & store them here:
+    ```
+    cd $HOME/robocomp-aston/components/detection/HumanIdentification/gaitFeatures/src/PretrainedModels
+    ```
+    Links to wieights: 
+    - GaitSet: [Official](https://github.com/AbnerHqC/GaitSet/blob/master/work/checkpoint/GaitSet/GaitSet_CASIA-B_73_False_256_0.2_128_full_30-80000-encoder.ptm), [Copy](https://drive.google.com/file/d/1SUOPjFBoci4MuXwUgG5arvVzeAw-t7j7/view?usp=sharing)
+    - Human Segmentation(UNet): [Official](https://drive.google.com/file/d/14QxasSCcL_ij7NHR7Fshx5fi5Sc9MleD/view?usp=sharing), [Copy](https://drive.google.com/file/d/14QxasSCcL_ij7NHR7Fshx5fi5Sc9MleD/view?usp=sharing)
+
+    After downloading the directory should look like this:
+    ```
+    src/PretrainedModels
+    ├── GaitSet_CASIA-B_73_False_256_0.2_128_full_30-80000-encoder.ptm
+    └── UNet_ResNet18.pth
+    ```
 
 
 #### Running with default setting 
-To run all components in default setting run:
+You can run all components in default setting run:
 ```
 # To use CameraSimple
 ./run.sh
+
+# To run on webcam
+./run.sh webcam
+
 # To run on video 
 ./run.sh <video-path>
 ```
@@ -87,7 +182,6 @@ For each module open a new terminal(Crtl-Alt-T)
 cd $HOME/robocomp-aston/components/detection/HumanIdentification/<Component_DIR>/
 cmake . 
 make
-cp etc/config etc/config-run
 ```
 *To avoid changing the **config** file in the repository, we can copy it to **config-new** in the component's home directory, so changes will remain untouched by future git pulls.*
 
@@ -95,12 +189,12 @@ Configuration parameters
 
 You must ensure the proxies, hostname and port number of 
 ```
-    FaceFeatures/etc/config-run, 
-    MPTFeatures/etc/config-run,
-    GaitFeatures/etc/config-run,
-    multiModalHumanIdentification/etc/config-run,
-    test/humanIdentificationClient/etc/config-run, 
-    ../../hardware/camera/camerasimple/etc/config-run,
+    FaceFeatures/etc/config, 
+    MPTFeatures/etc/config,
+    GaitFeatures/etc/config,
+    multiModalHumanIdentification/etc/config,
+    test/humanIdentificationClient/etc/config, 
+    ../../hardware/camera/camerasimple/etc/config,
 ```
 
 match the endpoints in the config files of the corresponding interfaces.
