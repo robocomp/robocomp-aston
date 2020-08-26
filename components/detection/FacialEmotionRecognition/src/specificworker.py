@@ -22,12 +22,14 @@
 from PySide2.QtCore import QTimer
 from PySide2.QtWidgets import QApplication
 
-
 import sys, os, traceback, time, glob
 import numpy as np
 import cv2
+import matplotlib.pyplot as plt
+
 import face_recognition
 import time
+import atexit
 
 from genericworker import *
 sys.path.append(os.path.join(os.getcwd(),"assets"))
@@ -46,17 +48,22 @@ class SpecificWorker(GenericWorker):
 		self.text_color = (255,255,255)
 		self.fps_text_color = (0,0,0)
 		self.class_names = ['Angry', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
-
+		self.frame_count = np.zeros((6))
 
 		# Select face_detection = 1 for dlib and 2 for RetinaNetMobile
 		self.face_detection_method = 2
 		if (self.face_detection_method == 2):
 			self.detector = face_detection.build_detector("RetinaNetMobileNetV1", max_resolution=1080)
 
-
+		self.fig = plt.gcf()
+		self.fig.show()
+		self.fig.canvas.draw()
 
 	def __del__(self):
-		print('SpecificWorker destructor')
+		print('Final Report')
+		for idx, class_name in enumerate(self.class_names):
+			print (class_name + ' = ' + "{:.3f}".format(self.frame_count[idx]/np.sum(self.frame_count)))
+		print ("Most prevalent emotion during the interaction was : " + self.class_names[np.argmax(self.frame_count)])
 
 	def setParams(self, params):
 		return True
@@ -98,7 +105,9 @@ class SpecificWorker(GenericWorker):
 				prob_vector = visualize.predict_emotion(faceImgGray)
 				self.probability_vector.append(prob_vector)
 				emotionlabel = self.class_names[np.argmax(prob_vector)]
+				self.frame_count[np.argmax(prob_vector)] += 1
 				cv2.putText(self.frame, emotionlabel, (x0, y0-2), cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.text_color, 1 , cv2.LINE_AA)
+				self.plot_emotion_graph()
 
 			# Calculating and showing FPS
 			fps = 1.0 / (time.time() - self.start_time)
@@ -112,6 +121,18 @@ class SpecificWorker(GenericWorker):
 		return True
 
 
+	def plot_emotion_graph(self):		
+		self.fig.clear()
+		plt.barh(self.class_names, (self.frame_count/np.sum(self.frame_count)))
+		self.fig.set_facecolor((216/255, 230/255, 242/255))
+		plt.title("Probable emotion during the interaction",  fontdict = {'fontsize' : 10})
+		plt.xlabel('Proabability(P) [0 <= P <= 1]')
+		plt.xlim(0, 1)
+		plt.grid(color='w', linestyle='-', linewidth=2)
+		plt.grid(True)
+		plt.grid(color='w', linestyle='-', linewidth=2)
+		plt.yticks(fontsize = 10)
+		self.fig.canvas.draw()
 
 	# =============== Methods for Component Implements ==================
 	# ===================================================================
