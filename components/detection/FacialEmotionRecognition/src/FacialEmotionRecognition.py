@@ -58,13 +58,13 @@
 import sys, traceback, IceStorm, time, os, copy
 from termcolor import colored
 
-# Ctrl+c handling
 import signal
 
 from PySide2 import QtCore
 
 from specificworker import *
 
+from matplotlib.backends.qt_compat import QtCore, QtWidgets, is_pyqt5
 
 class CommonBehaviorI(RoboCompCommonBehavior.CommonBehavior):
     def __init__(self, _handler):
@@ -91,10 +91,10 @@ class CommonBehaviorI(RoboCompCommonBehavior.CommonBehavior):
 
 #SIGNALS handler
 def sigint_handler(*args):
-    QtCore.QCoreApplication.quit()
+    QtWidgets.QApplication.quit()
     
 if __name__ == '__main__':
-    app = QtCore.QCoreApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     params = copy.deepcopy(sys.argv)
     if len(params) > 1:
         if not params[1].startswith('--Ice.Config='):
@@ -107,7 +107,6 @@ if __name__ == '__main__':
     parameters = {}
     for i in ic.getProperties():
         parameters[str(i)] = str(ic.getProperties().getProperty(i))
-
 
     # Remote object connection for CameraSimple
     try:
