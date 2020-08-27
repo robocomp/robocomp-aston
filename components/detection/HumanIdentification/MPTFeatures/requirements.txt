@@ -1,0 +1,13 @@
+progress
+llvmlite==0.33.0
+numba
+torch
+pycocotools
+matplotlib
+Cython
+torchvision
+numpy
+pyquaternion
+PySide2
+scikit_learn
+tensorboardX

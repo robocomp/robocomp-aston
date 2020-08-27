@@ -1,0 +1,13 @@
+# Proxies for required interfaces
+MultiModalHumanIdentificationProxy = multimodalhumanidentification:tcp -h localhost -p 9090
+CameraSimpleProxy = camerasimple:tcp -h localhost -p 10005
+
+
+
+
+Ice.Warn.Connections=0
+Ice.Trace.Network=0
+Ice.Trace.Protocol=0
+
+
+

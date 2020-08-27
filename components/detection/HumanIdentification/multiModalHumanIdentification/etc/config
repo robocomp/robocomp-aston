@@ -1,0 +1,19 @@
+# Endpoints for implements interfaces
+MultiModalHumanIdentification.Endpoints=tcp -p 9090
+
+
+# Proxies for required interfaces
+FaceFeaturesProxy = facefeatures:tcp -h localhost -p 9091
+GaitFeaturesProxy = gaitfeatures:tcp -h localhost -p 9092
+MPTFeaturesProxy = mptfeatures:tcp -h localhost -p 9093
+
+
+
+
+
+Ice.Warn.Connections=0
+Ice.Trace.Network=0
+Ice.Trace.Protocol=0
+
+
+

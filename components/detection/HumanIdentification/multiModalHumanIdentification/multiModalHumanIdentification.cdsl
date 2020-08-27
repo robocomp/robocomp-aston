@@ -1,0 +1,14 @@
+import "FaceFeatures.idsl";
+import "MPTFeatures.idsl";
+import "GaitFeatures.idsl";
+import "MultiModalHumanIdentification.idsl";
+
+Component multiModalHumanIdentification
+{
+    Communications
+    {
+        requires FaceFeatures, MPTFeatures,GaitFeatures;
+        implements MultiModalHumanIdentification;
+    };
+    language python;
+};

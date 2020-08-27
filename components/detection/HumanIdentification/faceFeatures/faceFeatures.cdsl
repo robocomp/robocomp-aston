@@ -1,0 +1,10 @@
+import "FaceFeatures.idsl";
+
+Component faceFeatures
+{
+    Communications
+    {
+        implements FaceFeatures;
+    };
+    language Python;
+};

@@ -1,0 +1,10 @@
+# Endpoints for implements interfaces
+FaceFeatures.Endpoints=tcp -p 9091
+
+
+
+
+
+Ice.Warn.Connections=0
+Ice.Trace.Network=0
+Ice.Trace.Protocol=0

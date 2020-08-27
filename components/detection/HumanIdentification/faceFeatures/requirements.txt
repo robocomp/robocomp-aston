@@ -1,0 +1,6 @@
+opencv-contrib-python
+numpy
+mxnet-cu101mkl
+scikit-image
+PySide2
+scikit-learn
